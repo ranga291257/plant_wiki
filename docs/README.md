@@ -6,7 +6,7 @@ Extended guides for local use. The GitHub repo ships [README.md](../README.md) a
 |-------|----------|
 | [HOW_IT_WORKS.md](HOW_IT_WORKS.md) | Plain-English walkthrough of folders, scripts, and Obsidian |
 | [OPERATOR.md](OPERATOR.md) | Day-to-day commands and workflows |
-| [WEB_UI.md](WEB_UI.md) | Optional browser control panel |
+| [WEB_UI.md](WEB_UI.md) | Browser control panel (**canonical** UI detail) |
 | [USAGE.md](USAGE.md) | New topic setup and template usage |
 | [UPGRADE.md](UPGRADE.md) | Pulling engine updates via `git subtree` |
 | [CLEANUP.md](CLEANUP.md) | What was archived when retiring llmwiki / local-wiki |

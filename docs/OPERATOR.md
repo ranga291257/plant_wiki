@@ -71,8 +71,15 @@ Use `- None yet` for empty sections. Every substantive page needs `` `raw/...` `
 - Broken `` `raw/...` `` paths (use full paths, e.g. `raw/thermal-plant/...`)
 - Skipping lint after ingest
 
+## Web control panel
+
+Optional browser UI: `./scripts/run_web.sh` → http://127.0.0.1:8765. All sections, APIs, and Step 3 (refresh vs rebuild vs AI lint): **[WEB_UI.md](WEB_UI.md)**.
+
+CLI-only maintenance after edits: `./run scripts/build_index.py` then `./run scripts/lint_wiki.py --conversion-only`.
+
 ## See also
 
 - [HOW_IT_WORKS.md](HOW_IT_WORKS.md) — conceptual tour
+- [WEB_UI.md](WEB_UI.md) — control panel sections 0–5
 - [USAGE.md](USAGE.md) — new topic from template
 - [UPGRADE.md](UPGRADE.md) — engine upgrades

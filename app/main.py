@@ -14,6 +14,8 @@ from app.change_tracker import build_snapshot, diff_snapshots, load_snapshot, sa
 from app.llm_ingest import DEFAULT_MODEL, run_ingest
 from app.llm_lint import run_llm_lint
 from app.llm_query import run_query, write_analysis
+from app.ollama_models import fetch_ollama_models
+from app.wiki_graph import build_wiki_graph_html
 from app.wiki_runner import run_convert, run_pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,9 +42,25 @@ def api_config() -> dict[str, str]:
     }
 
 
+@app.get("/api/ollama/models")
+def api_ollama_models() -> dict[str, object]:
+    result = fetch_ollama_models()
+    return {
+        "models": result.models,
+        "default_model": result.default_model,
+        "ollama_reachable": result.ollama_reachable,
+        "error": result.error,
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request=request, name="index.html")
+
+
+@app.get("/wiki-graph", response_class=HTMLResponse)
+def wiki_graph_page() -> HTMLResponse:
+    return HTMLResponse(build_wiki_graph_html(WIKI_DIR))
 
 
 @app.get("/api/changes")

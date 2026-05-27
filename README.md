@@ -43,16 +43,18 @@ Scaffold-only (no LLM, structure test):
 
 ## Web control panel (optional)
 
-Browser UI ported from the legacy llmwiki FastAPI panel — upload raw files, run ingest, full conversion, query, and rebuild index/lint.
+Browser UI at http://127.0.0.1:8765 — upload, convert, ingest, refresh raw changes, rebuild the wiki index, lint, and query. Full section-by-section guide: **[docs/WEB_UI.md](docs/WEB_UI.md)**.
 
 ```bash
 ./scripts/setup_venv.sh
 ./scripts/run_web.sh
 ```
 
-Open http://127.0.0.1:8765 — requires Ollama. Set `LLM_MODEL` (and optionally `OLLAMA_URL`) in the environment before starting.
+**Start Ollama first** for LLM actions (cloud/embedding models filtered from the dropdown). Optional: `export LLM_MODEL=gemma4:e2b`.
 
 Install deps only: `pip install -r requirements-web.txt`
+
+Panel tabs, scaffold-only, link graph (**Open graph**), and maintain workflow: **[docs/WEB_UI.md](docs/WEB_UI.md)**.
 
 ## Architecture
 
@@ -87,6 +89,7 @@ Extended guides live under `docs/` (not required on GitHub):
 
 - [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) — plain-English system tour
 - [docs/OPERATOR.md](docs/OPERATOR.md) — operator runbook
+- [docs/WEB_UI.md](docs/WEB_UI.md) — web control panel (canonical detail)
 - [docs/USAGE.md](docs/USAGE.md) — new topic / template usage
 - [docs/UPGRADE.md](docs/UPGRADE.md) — engine upgrades via `git subtree`
 

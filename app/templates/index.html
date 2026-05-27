@@ -4,117 +4,117 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plant Wiki Control Panel</title>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; line-height: 1.5; color: #1a2e1a; }
-      h1 { margin-bottom: 0.2rem; color: #1b5e3b; }
-      .subtitle { color: #555; margin-bottom: 1.5rem; font-size: 0.95rem; }
-      .card { border: 1px solid #c5d9c5; padding: 1rem 1.2rem; margin-bottom: 1rem; border-radius: 8px; background: #fafdfa; }
-      .row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; }
-      button { padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 5px; border: 1px solid #8aab8a; background: #eef6ee; }
-      button.primary { background: #1b5e3b; color: white; border-color: #1b5e3b; }
-      button.llm { background: #2d6a4f; color: white; border-color: #2d6a4f; }
-      button.warn { background: #856404; color: white; border-color: #856404; }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      select, input[type=text] { padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px solid #bbb; }
-      pre { background: #f0f4f0; padding: 0.8rem; overflow-x: auto; white-space: pre-wrap; font-size: 0.88rem; border-radius: 4px; }
-      .ok { color: #0a7a30; font-weight: bold; }
-      .bad { color: #a12222; font-weight: bold; }
-      .warn { color: #856900; }
-      ul { margin: 0.4rem 0 0 1rem; }
-      label { font-size: 0.9rem; }
-      .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: #555; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .hint { font-size: 0.85rem; color: #666; margin: 0.3rem 0 0.6rem; }
-    </style>
+    <link rel="stylesheet" href="/static/panel.css" />
   </head>
   <body>
-    <h1>Plant Wiki Control Panel</h1>
-    <p class="subtitle">Local web UI for <code>raw/</code> &rarr; <code>wiki/</code> &mdash; Ollama, citations, Obsidian vault</p>
-
-    <div class="card">
-      <h2>0. Full conversion</h2>
-      <p class="hint">Runs <code>convert_raw_to_wiki.py</code> on all markdown under <code>raw/</code>. May take several minutes.</p>
-      <div class="row">
+    <header class="app-header">
+      <h1>Plant Wiki Control Panel</h1>
+      <p class="subtitle">Local web UI for <code>raw/</code> &rarr; <code>wiki/</code> &mdash; Ollama, citations, Obsidian vault</p>
+      <div id="ollama-models-banner"></div>
+      <div class="header-row">
         <label>Model&nbsp;
-          <input type="text" id="convert-model-input" style="width:220px;" />
-        </label>
-        <button id="convert-full-btn" class="warn">Convert all (LLM)</button>
-        <button id="convert-scaffold-btn">Scaffold only</button>
-      </div>
-      <div id="convert-status"></div>
-      <div id="convert-result"></div>
-    </div>
-
-    <div class="card">
-      <h2>1. Upload document</h2>
-      <form id="upload-form" class="row">
-        <input id="file" type="file" required />
-        <label>
-          Destination&nbsp;
-          <select id="destination">
-            <option value="raw">raw/ (flat upload)</option>
-            <option value="assets">raw/assets/</option>
+          <select id="global-model-input" style="min-width:240px;">
+            <option value="">Loading models...</option>
           </select>
         </label>
-        <button type="submit" class="primary">Upload</button>
-      </form>
-      <p class="hint">For topic folders (e.g. <code>raw/thermal-plant/...</code>), copy files into place manually, then refresh changes.</p>
-      <div id="upload-status"></div>
-    </div>
-
-    <div class="card">
-      <h2>2. Ingest one file (LLM)</h2>
-      <div class="row">
-        <label>Raw file&nbsp;
-          <select id="raw-file-select" style="min-width:280px;">
-            <option value="">-- loading --</option>
-          </select>
-        </label>
-        <label>Model&nbsp;
-          <input type="text" id="model-input" style="width:220px;" />
-        </label>
-        <button id="ingest-btn" class="llm">Ingest</button>
+        <span id="last-run-chip" role="button" tabindex="0" title="Open run log"></span>
+        <button type="button" id="open-graph-btn" title="Interactive link graph (pyvis)">Open graph</button>
       </div>
-      <div id="ingest-status"></div>
-      <div id="ingest-result"></div>
-    </div>
+    </header>
 
-    <div class="card">
-      <h2>3. Refresh &amp; update wiki</h2>
-      <div class="row">
-        <button id="refresh-btn">Refresh changes</button>
-        <button id="update-btn" class="primary">Rebuild index + lint</button>
-        <button id="ai-lint-btn">AI lint</button>
-      </div>
-      <div id="changes-summary"></div>
-      <div id="changes-detail"></div>
-    </div>
+    <nav class="tab-bar" role="tablist">
+      <button type="button" class="tab-btn" role="tab" data-tab="convert" aria-selected="true">Convert</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="documents">Documents</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="maintain">Maintain</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="ask">Ask</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="run-log" id="tab-btn-run-log">Run log</button>
+    </nav>
 
-    <div class="card">
-      <h2>4. Ask a question</h2>
-      <div class="row">
-        <input id="query-input" type="text" placeholder="What interlocks apply to TIC-102 at startup?" style="min-width:420px;" />
-        <label>Model&nbsp;
-          <input type="text" id="query-model-input" style="width:220px;" />
-        </label>
-        <button id="query-btn" class="llm">Ask</button>
+    <section id="panel-convert" class="tab-panel active" role="tabpanel">
+      <div class="card convert-card" id="convert-card">
+        <h2>Full conversion</h2>
+        <p class="hint">Runs <code>convert_raw_to_wiki.py</code> on all markdown under <code>raw/</code>. May take several minutes.</p>
+        <div class="row">
+          <button type="button" id="convert-full-btn" class="warn">Convert all (LLM)</button>
+          <button type="button" id="convert-scaffold-btn">Scaffold only</button>
+        </div>
+        <div id="convert-status" class="action-status"></div>
       </div>
-      <div id="query-status"></div>
-      <div id="query-result"></div>
-      <div class="row">
-        <label>Analysis slug&nbsp;
-          <input id="analysis-slug-input" type="text" value="thermal-query-analysis" style="width:260px;" />
-        </label>
-        <button id="file-analysis-btn">Save as analysis</button>
-      </div>
-      <div id="file-analysis-status"></div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h2>5. Run status</h2>
-      <div id="run-status"></div>
-      <div id="run-steps"></div>
-    </div>
+    <section id="panel-documents" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <h2>Upload document</h2>
+        <form id="upload-form" class="row">
+          <input id="file" type="file" required />
+          <label>
+            Destination&nbsp;
+            <select id="destination">
+              <option value="raw">raw/ (flat upload)</option>
+              <option value="assets">raw/assets/</option>
+            </select>
+          </label>
+          <button type="submit" class="primary">Upload</button>
+        </form>
+        <p class="hint">For topic folders (e.g. <code>raw/thermal-plant/...</code>), copy files on disk, then check <strong>Maintain</strong> for raw changes.</p>
+        <div id="upload-status" class="action-status"></div>
+      </div>
+      <div class="card">
+        <h2>Ingest one file (LLM)</h2>
+        <div class="row">
+          <label>Raw file&nbsp;
+            <select id="raw-file-select" style="min-width:280px;">
+              <option value="">-- loading --</option>
+            </select>
+          </label>
+          <button type="button" id="ingest-btn" class="llm">Ingest</button>
+        </div>
+        <div id="ingest-status" class="action-status"></div>
+      </div>
+    </section>
+
+    <section id="panel-maintain" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <h2>Refresh &amp; update wiki</h2>
+        <p class="hint">Does not run LLM conversion. Rebuild index + lint after ingest or conversion.</p>
+        <div class="row">
+          <button type="button" id="refresh-btn">Refresh changes</button>
+          <button type="button" id="update-btn" class="primary">Rebuild index + lint</button>
+          <button type="button" id="ai-lint-btn">AI lint</button>
+        </div>
+        <div id="maintain-status" class="action-status"></div>
+        <div id="changes-summary"></div>
+        <div id="changes-detail"></div>
+      </div>
+    </section>
+
+    <section id="panel-ask" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <h2>Ask a question</h2>
+        <div class="row">
+          <input id="query-input" type="text" placeholder="What interlocks apply to TIC-102 at startup?" style="min-width:420px;" />
+          <button type="button" id="query-btn" class="llm">Ask</button>
+        </div>
+        <div id="query-status" class="action-status"></div>
+        <div id="query-result" class="query-result"></div>
+        <div class="row" style="margin-top:1rem;">
+          <label>Analysis slug&nbsp;
+            <input id="analysis-slug-input" type="text" value="thermal-query-analysis" style="width:260px;" />
+          </label>
+          <button type="button" id="file-analysis-btn">Save as analysis</button>
+        </div>
+        <div id="file-analysis-status" class="action-status"></div>
+      </div>
+    </section>
+
+    <section id="panel-run-log" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <h2>Run log</h2>
+        <p class="hint">Command output from convert, ingest, rebuild, and AI lint. Opens automatically on failure.</p>
+        <div id="run-log-summary"></div>
+        <div id="run-log-body"></div>
+      </div>
+    </section>
 
     <script src="/static/app.js"></script>
   </body>

@@ -249,19 +249,24 @@ The exact concept and entity names depend on what the raw file mentions and what
 
 ---
 
-## 9. Optional vs required
+## 9. Optional web control panel
+
+`./scripts/run_web.sh` → http://127.0.0.1:8765 — same workflows as the CLI, in the browser. **Section 3 does not run LLM conversion** (it refreshes the raw change list and rebuilds `wiki/index.md` + structural lint). Details: [WEB_UI.md](WEB_UI.md).
+
+## 10. Optional vs required
 
 - **Required for a useful wiki:** `convert_raw_to_wiki.py` (full run), Obsidian on `wiki/`
-- **Optional:** `oc_ingest.py`, `oc_query.py`, `oc_file_analysis.py`, human review workflow (Draft → Approved)
+- **Optional:** web UI (`run_web.sh`), `oc_ingest.py`, `oc_query.py`, `oc_file_analysis.py`, human review workflow (Draft → Approved)
 - **Never:** edit files in `raw/` after intake — add new files instead
 
 Default conversion marks pages **Converted** (auto). You can change **Status** in `## Review` later.
 
 ---
 
-## 10. Where to read next
+## 11. Where to read next
 
 - [README.md](../README.md) — quick start
+- [WEB_UI.md](WEB_UI.md) — browser control panel
 - [OPERATOR.md](OPERATOR.md) — commands and workflows
 - [schema/AGENTS.md](../schema/AGENTS.md) — maintainer rules
 - [wiki/guides/obsidian-getting-started.md](../wiki/guides/obsidian-getting-started.md) — Obsidian tips (local vault)

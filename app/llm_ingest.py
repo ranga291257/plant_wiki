@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -32,7 +33,7 @@ Use this page structure template as canonical shape:
 
 Template adaptation rules:
 - Replace placeholders like <Source Title>, <path>, and generic guidance with source-specific content.
-- Ensure `raw/{filename}` appears in Metadata and Sources.
+- Ensure `{raw_rel}` appears in Metadata and Sources (exact path, in backticks).
 - Keep all required sections present.
 - Keep concise bullet-oriented writing.
 
@@ -77,7 +78,7 @@ Use this page structure template as canonical shape:
 Template adaptation rules:
 - Replace `<Concept Name>` with `{concept_name}`.
 - Fill all placeholder sections with source-grounded content.
-- Include `raw/{filename}` in Sources.
+- Include `{raw_rel}` in Sources (exact path, in backticks).
 - Keep required sections present and concise.
 
 Output only the markdown page. No explanation text.
@@ -122,7 +123,7 @@ Template adaptation rules:
 - Replace `<Entity Name>` with `{entity_name}`.
 - Replace entity type placeholder with `{entity_type}`.
 - Fill all sections with source-grounded content.
-- Include `raw/{filename}` in Sources.
+- Include `{raw_rel}` in Sources (exact path, in backticks).
 - Keep required sections present and concise.
 
 Output only the markdown page. No explanation text.
@@ -147,7 +148,7 @@ Update rules:
 - Preserve existing reviewer and status values in frontmatter and the ## Review section.
 - Preserve existing sections; do not remove useful prior content.
 - Add new evidence and facts from this source where relevant.
-- Ensure this source is listed in ## Sources as `raw/{filename}` (without removing existing sources).
+- Ensure this source is listed in ## Sources as `{raw_rel}` (without removing existing sources).
 - If this source conflicts with existing claims, add a contradiction note in ## Unresolved Questions.
 - Keep output concise and markdown only.
 
@@ -173,7 +174,7 @@ Update rules:
 - Preserve existing reviewer and status values in frontmatter and the ## Review section.
 - Preserve existing sections; do not remove useful prior content.
 - Add new evidence and facts from this source where relevant.
-- Ensure this source is listed in ## Sources as `raw/{filename}` (without removing existing sources).
+- Ensure this source is listed in ## Sources as `{raw_rel}` (without removing existing sources).
 - If this source conflicts with existing claims, add a contradiction note in ## Unresolved Questions.
 - Keep output concise and markdown only.
 
@@ -219,6 +220,126 @@ def _slugify(name: str) -> str:
     return slug or "page"
 
 
+_RAW_CITATION_RE = re.compile(r"`raw/([^`]+)`")
+
+
+def _strip_code_fences(text: str) -> str:
+    lines: list[str] = []
+    in_fence = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if not in_fence:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def _unwrap_doubled_braces(fragment: str) -> str:
+    s = fragment.strip()
+    while s.startswith("{{") and s.endswith("}}") and len(s) > 2:
+        s = s[1:-1].strip()
+    return s
+
+
+def _strip_line_prefix(line: str) -> str:
+    line = line.strip()
+    line = re.sub(r"^[-*]\s+", "", line)
+    line = re.sub(r"^\d+\.\s+", "", line)
+    return line.strip()
+
+
+def _load_json_object(fragment: str) -> dict:
+    fragment = _unwrap_doubled_braces(_strip_line_prefix(fragment))
+    if not fragment.startswith("{"):
+        raise ValueError("not a JSON object")
+    try:
+        obj = json.loads(fragment)
+    except json.JSONDecodeError:
+        obj = ast.literal_eval(fragment)
+    if not isinstance(obj, dict):
+        raise ValueError(f"expected object, got {type(obj).__name__}")
+    return obj
+
+
+def _extract_json_objects(text: str) -> list[dict]:
+    """Parse JSONL / fenced / chatty model output into concept/entity dicts."""
+    text = _strip_code_fences(text)
+    objects: list[dict] = []
+    seen: set[str] = set()
+
+    def add_obj(obj: dict) -> None:
+        key = json.dumps(obj, sort_keys=True)
+        if key not in seen:
+            seen.add(key)
+            objects.append(obj)
+
+    decoder = json.JSONDecoder()
+    for chunk in (text, *text.splitlines()):
+        s = chunk.strip()
+        if "{" not in s:
+            continue
+        i = 0
+        while i < len(s):
+            start = s.find("{", i)
+            if start < 0:
+                break
+            fragment = s[start:]
+            for candidate in (fragment, _unwrap_doubled_braces(fragment)):
+                try:
+                    obj, end = decoder.raw_decode(candidate)
+                    if isinstance(obj, dict):
+                        add_obj(obj)
+                    i = start + end
+                    break
+                except json.JSONDecodeError:
+                    try:
+                        add_obj(_load_json_object(candidate))
+                        i = len(s)
+                        break
+                    except (SyntaxError, ValueError, json.JSONDecodeError):
+                        pass
+            else:
+                i = start + 1
+    return objects
+
+
+def _ensure_raw_citation(md: str, raw_rel: str) -> str:
+    """Guarantee lint-friendly `raw/...` backtick citation and drop bogus raw/ links."""
+    if _RAW_CITATION_RE.search(md):
+        return md
+
+    citation = f"- `{raw_rel}`"
+    if "## Sources" not in md:
+        return md.rstrip() + f"\n\n## Sources\n{citation}\n"
+
+    def fix_sources(match: re.Match[str]) -> str:
+        body = match.group(2)
+        cleaned_lines: list[str] = []
+        for line in body.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped == "- None yet":
+                continue
+            if re.search(r"\]\(raw/", stripped):
+                continue
+            if re.match(r"^-\s+raw/", stripped) and "`" not in stripped:
+                continue
+            cleaned_lines.append(line)
+        if not any(_RAW_CITATION_RE.search(line) for line in cleaned_lines):
+            cleaned_lines.append(citation)
+        body_out = "\n".join(cleaned_lines).rstrip()
+        return match.group(1) + body_out + "\n"
+
+    return re.sub(
+        r"(## Sources\n)(.*?)(?=\n## |\Z)",
+        fix_sources,
+        md,
+        count=1,
+        flags=re.DOTALL,
+    )
+
+
 def _safe_write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
@@ -255,7 +376,8 @@ def _apply_conversion_review(md: str) -> str:
     return md
 
 
-def _finalize_page(content: str, conversion_only: bool) -> str:
+def _finalize_page(content: str, conversion_only: bool, raw_rel: str) -> str:
+    content = _ensure_raw_citation(content, raw_rel)
     if conversion_only:
         return _apply_conversion_review(content)
     return content
@@ -275,6 +397,7 @@ def run_ingest(
 
     content = raw_path.read_text(encoding="utf-8")
     filename = raw_path.name
+    raw_rel = raw_path.relative_to(ROOT).as_posix()
     rules = AGENTS_RULES.strip() + _conversion_rules_extra(conversion_only)
     source_template = _load_template("source-summary-template.md")
     concept_template = _load_template("concept-template.md")
@@ -284,12 +407,13 @@ def run_ingest(
     summary_prompt = SOURCE_SUMMARY_PROMPT.format(
         rules=rules,
         filename=filename,
+        raw_rel=raw_rel,
         content=content,
         template=source_template,
     )
     try:
         summary_md = _ollama_generate(summary_prompt, model)
-        summary_md = _finalize_page(summary_md, conversion_only)
+        summary_md = _finalize_page(summary_md, conversion_only, raw_rel)
         slug = _slugify(raw_path.stem)
         summary_path = wiki_root / "sources" / f"{slug}.md"
         _safe_write(summary_path, summary_md)
@@ -302,12 +426,8 @@ def run_ingest(
     concept_prompt = CONCEPT_EXTRACTION_PROMPT.format(rules=rules, filename=filename, content=content)
     try:
         concept_json_lines = _ollama_generate(concept_prompt, model)
-        for line in concept_json_lines.splitlines():
-            line = line.strip()
-            if not line.startswith("{"):
-                continue
+        for concept in _extract_json_objects(concept_json_lines):
             try:
-                concept = json.loads(line)
                 slug = concept.get("slug") or _slugify(concept["name"])
                 page_path = wiki_root / "concepts" / f"{slug}.md"
                 if page_path.exists():
@@ -316,11 +436,12 @@ def run_ingest(
                         rules=rules,
                         existing_content=existing_content,
                         filename=filename,
+                        raw_rel=raw_rel,
                         content=content,
                         relevance=concept["relevance"],
                     )
                     page_md = _ollama_generate(page_prompt, model)
-                    page_md = _finalize_page(page_md, conversion_only)
+                    page_md = _finalize_page(page_md, conversion_only, raw_rel)
                     _safe_write(page_path, page_md)
                     concept_pages_updated.append(str(page_path.relative_to(wiki_root.parent)))
                     continue
@@ -330,15 +451,17 @@ def run_ingest(
                     concept_name=concept["name"],
                     relevance=concept["relevance"],
                     filename=filename,
+                    raw_rel=raw_rel,
                     content=content,
                     template=concept_template,
                 )
                 page_md = _ollama_generate(page_prompt, model)
-                page_md = _finalize_page(page_md, conversion_only)
+                page_md = _finalize_page(page_md, conversion_only, raw_rel)
                 _safe_write(page_path, page_md)
                 concept_pages_created.append(str(page_path.relative_to(wiki_root.parent)))
             except Exception as exc:
-                errors.append(f"concept page error ({line[:40]}): {exc}")
+                label = concept.get("name") or concept.get("slug") or "unknown"
+                errors.append(f"concept page error ({label}): {exc}")
     except Exception as exc:
         errors.append(f"concept extraction error: {exc}")
 
@@ -346,12 +469,8 @@ def run_ingest(
     entity_prompt = ENTITY_EXTRACTION_PROMPT.format(rules=rules, filename=filename, content=content)
     try:
         entity_json_lines = _ollama_generate(entity_prompt, model)
-        for line in entity_json_lines.splitlines():
-            line = line.strip()
-            if not line.startswith("{"):
-                continue
+        for entity in _extract_json_objects(entity_json_lines):
             try:
-                entity = json.loads(line)
                 slug = entity.get("slug") or _slugify(entity["name"])
                 page_path = wiki_root / "entities" / f"{slug}.md"
                 if page_path.exists():
@@ -360,11 +479,12 @@ def run_ingest(
                         rules=rules,
                         existing_content=existing_content,
                         filename=filename,
+                        raw_rel=raw_rel,
                         content=content,
                         relevance=entity["relevance"],
                     )
                     page_md = _ollama_generate(page_prompt, model)
-                    page_md = _finalize_page(page_md, conversion_only)
+                    page_md = _finalize_page(page_md, conversion_only, raw_rel)
                     _safe_write(page_path, page_md)
                     entity_pages_updated.append(str(page_path.relative_to(wiki_root.parent)))
                     continue
@@ -375,15 +495,17 @@ def run_ingest(
                     entity_type=entity["entity_type"],
                     relevance=entity["relevance"],
                     filename=filename,
+                    raw_rel=raw_rel,
                     content=content,
                     template=entity_template,
                 )
                 page_md = _ollama_generate(page_prompt, model)
-                page_md = _finalize_page(page_md, conversion_only)
+                page_md = _finalize_page(page_md, conversion_only, raw_rel)
                 _safe_write(page_path, page_md)
                 entity_pages_created.append(str(page_path.relative_to(wiki_root.parent)))
             except Exception as exc:
-                errors.append(f"entity page error ({line[:40]}): {exc}")
+                label = entity.get("name") or entity.get("slug") or "unknown"
+                errors.append(f"entity page error ({label}): {exc}")
     except Exception as exc:
         errors.append(f"entity extraction error: {exc}")
 
