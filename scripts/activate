@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Activate the project venv in your *current* shell:
+#   source scripts/activate
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VENV="$ROOT/.venv"
+if [[ ! -f "$VENV/bin/activate" ]]; then
+  echo "No .venv found. Run: ./scripts/setup_venv.sh" >&2
+  return 1 2>/dev/null || exit 1
+fi
+repo_name="$(basename "$ROOT")"
+if ! grep -q "${repo_name}/.venv" "$VENV/bin/activate" 2>/dev/null; then
+  echo "Stale .venv (from another project). Run: ./scripts/setup_venv.sh" >&2
+  return 1 2>/dev/null || exit 1
+fi
+# shellcheck disable=SC1091
+source "$VENV/bin/activate"
+echo "venv active: $(which python3)"

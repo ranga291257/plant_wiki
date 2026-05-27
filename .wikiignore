@@ -1,0 +1,19 @@
+# .wikiignore
+# Patterns of paths under raw/ that the wiki engine will skip during
+# corpus discovery, ingest, and lint citation checks.
+#
+# Syntax:
+# - Lines starting with `#` are comments. Blank lines are ignored.
+# - A pattern ending with `/` matches any directory component with that name
+#   anywhere under raw/ (e.g. `OneNote_RecycleBin/` skips the whole tree).
+# - All other patterns are fnmatch globs matched against the file name AND
+#   against the path relative to raw/.
+
+# OneNote artifacts that are not knowledge content
+OneNote_RecycleBin/
+Z_Old_Notes/
+
+# Editor / sync junk
+*Untitled*.md
+~$*.md
+.DS_Store

@@ -1,0 +1,44 @@
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local runtime and temp files
+*.log
+*.tmp
+*.temp
+
+# mkdocs build output
+_site/
+
+# Local data (not published to GitHub)
+raw/*
+!raw/.gitkeep
+wiki/*
+!wiki/.gitkeep
+
+# Obsidian local UI state (vault root: wiki/)
+wiki/.obsidian/
+
+# Optional local secrets/config
+.env
+.env.*

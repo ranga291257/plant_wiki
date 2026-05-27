@@ -1,0 +1,2 @@
+# OpenClaw mode: no mandatory pip dependencies.
+# Optional: install your local tooling as needed.

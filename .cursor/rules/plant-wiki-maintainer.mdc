@@ -1,0 +1,23 @@
+---
+description: Plant LLM wiki maintainer — model-agnostic
+alwaysApply: true
+---
+
+# Plant wiki maintainer
+
+Follow `schema/AGENTS.md` and `schema/review-rules.md` for all wiki work in this repo.
+
+## Rules
+
+- Never edit files under `raw/`. Treat `raw/` as immutable source of truth.
+- Only create or update pages under `wiki/`.
+- Every substantive `wiki/` page must cite `raw/...` paths in `## Sources`.
+- Use `wiki/entities/` for tagged equipment, instruments, valves, and control loops.
+- Use `wiki/concepts/` for control theory, diagnostics, and process phenomena.
+- Use `wiki/analyses/` for durable diagnostic or optimization write-ups.
+- Keep required sections per schema; use `- None yet` for empty sections.
+- Preserve uncertainty; distinguish facts from hypotheses.
+
+## Plant corpus
+
+Primary source corpus: `raw/thermal-plant/` (thermal loop proof of concept).
