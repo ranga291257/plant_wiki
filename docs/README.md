@@ -8,5 +8,6 @@ Extended guides for local use. The GitHub repo ships [README.md](../README.md) a
 | [OPERATOR.md](OPERATOR.md) | Day-to-day commands and workflows |
 | [USAGE.md](USAGE.md) | New topic setup and template usage |
 | [UPGRADE.md](UPGRADE.md) | Pulling engine updates via `git subtree` |
+| [CLEANUP.md](CLEANUP.md) | What was archived when retiring llmwiki / local-wiki |
 
 Maintainer rules: [schema/AGENTS.md](../schema/AGENTS.md), [schema/review-rules.md](../schema/review-rules.md).
