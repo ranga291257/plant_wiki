@@ -1,0 +1,1 @@
+"""Plant Wiki application package."""

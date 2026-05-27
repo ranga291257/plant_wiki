@@ -41,6 +41,19 @@ Scaffold-only (no LLM, structure test):
 
 6. Open the `wiki/` folder in Obsidian — start at `index.md` or your topic hub under `wiki/mocs/`.
 
+## Web control panel (optional)
+
+Browser UI ported from the legacy llmwiki FastAPI panel — upload raw files, run ingest, full conversion, query, and rebuild index/lint.
+
+```bash
+./scripts/setup_venv.sh
+./scripts/run_web.sh
+```
+
+Open http://127.0.0.1:8765 — requires Ollama. Set `LLM_MODEL` (and optionally `OLLAMA_URL`) in the environment before starting.
+
+Install deps only: `pip install -r requirements-web.txt`
+
 ## Architecture
 
 ```text

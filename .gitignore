@@ -42,3 +42,6 @@ wiki/.obsidian/
 # Optional local secrets/config
 .env
 .env.*
+
+# Web UI runtime state (raw file snapshots for change detection)
+state/
