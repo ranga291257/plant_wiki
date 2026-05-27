@@ -1,2 +1,2 @@
-# OpenClaw mode: no mandatory pip dependencies.
-# Optional: install your local tooling as needed.
+# No mandatory pip dependencies for core scripts (stdlib + local Ollama).
+# Optional: pip install mkdocs-material  # for local MkDocs preview of wiki/

@@ -27,6 +27,4 @@ NOTICE — Attribution
 This project implements the workflow described in "LLM Wiki" by Andrej Karpathy:
 https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f
 
-The Karpathy gist does not ship a separate license file. This repository is an
-independent derivative implementation. Plant-specific content under raw/ and
-wiki/ is not distributed via this repository.
+

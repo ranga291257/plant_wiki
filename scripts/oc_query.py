@@ -13,7 +13,7 @@ WIKI = ROOT / "wiki"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OpenClaw query against wiki")
+    parser = argparse.ArgumentParser(description="Query the wiki with a natural-language question")
     parser.add_argument("question", help="Diagnostic question to ask")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Ollama model name")
     args = parser.parse_args()

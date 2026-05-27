@@ -20,7 +20,7 @@ def run_update_pipeline() -> None:
     commands = [
         [py, "scripts/build_index.py"],
         [py, "scripts/lint_wiki.py"],
-        [py, "scripts/log_event.py", "update", "OpenClaw ingest", "trigger=openclaw"],
+        [py, "scripts/log_event.py", "update", "Wiki ingest", "trigger=oc_ingest"],
     ]
     for cmd in commands:
         result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
@@ -31,8 +31,11 @@ def run_update_pipeline() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OpenClaw ingest: raw source -> wiki updates")
-    parser.add_argument("raw_file", help="Path relative to repo root, e.g. raw/fc101-loop-narrative.md")
+    parser = argparse.ArgumentParser(description="Ingest one raw source file into wiki/")
+    parser.add_argument(
+        "raw_file",
+        help="Path relative to repo root, e.g. raw/thermal-plant/procedures/startup-sop-excerpt.md",
+    )
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Ollama model name")
     args = parser.parse_args()
 

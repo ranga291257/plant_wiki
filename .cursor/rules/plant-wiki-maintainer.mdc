@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Plant wiki maintainer
 
-Follow `schema/AGENTS.md` and `schema/review-rules.md` for all wiki work in this repo.
+Follow `schema/AGENTS.md` and `schema/review-rules.md` for all wiki work. User docs: `README.md`, `docs/`. `raw/` and `wiki/` are local-only (gitignored).
 
 ## Rules
 

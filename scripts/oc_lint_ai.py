@@ -13,7 +13,7 @@ WIKI = ROOT / "wiki"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OpenClaw semantic lint")
+    parser = argparse.ArgumentParser(description="Semantic lint of wiki pages (LLM-assisted)")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Ollama model name")
     args = parser.parse_args()
 

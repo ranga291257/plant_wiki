@@ -1,4 +1,4 @@
-# AGENTS.md - LLM Wiki Maintainer Schema
+# AGENTS.md - Plant Wiki Maintainer Schema
 
 ## Role
 Maintain a persistent wiki from trusted raw source documents.

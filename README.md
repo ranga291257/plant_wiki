@@ -8,8 +8,8 @@ This project is a **derivative implementation** of the workflow described in And
 
 ## What is in this repository
 
-| Included | Not included (local only) |
-|----------|---------------------------|
+| Included on GitHub | Local only (gitignored) |
+|--------------------|-------------------------|
 | `app/`, `scripts/`, `schema/`, `templates/` | `raw/` — your source notes |
 | `run`, `requirements.txt`, `.wikiignore` | `wiki/` — generated Obsidian vault |
 | This README and [LICENSE](LICENSE) | `.venv/` — create with `setup_venv.sh` |
@@ -39,7 +39,7 @@ Scaffold-only (no LLM, structure test):
 ./run scripts/convert_raw_to_wiki.py --scaffold-only
 ```
 
-6. Open the `wiki/` folder in Obsidian and start at `index.md` or your topic hub under `wiki/mocs/`.
+6. Open the `wiki/` folder in Obsidian — start at `index.md` or your topic hub under `wiki/mocs/`.
 
 ## Architecture
 
@@ -56,14 +56,26 @@ wiki/      -> generated knowledge pages / Obsidian vault (local only)
 
 | Script | Role |
 |--------|------|
-| `convert_raw_to_wiki.py` | One-command raw → wiki (bootstrap + index + lint) |
+| `convert_raw_to_wiki.py` | **Main entry:** LLM convert + scaffold + index + lint |
 | `bootstrap_wiki.py` | Lower-level batch rebuild |
 | `build_index.py` | Rebuild `wiki/index.md` |
 | `lint_wiki.py` | Structural checks |
 | `init_topic.py` | Initialize a new topic from this template |
 | `oc_ingest.py` | Ingest one raw file (optional) |
+| `oc_query.py` | Query existing wiki (optional) |
+| `oc_file_analysis.py` | Save analysis to `wiki/analyses/` (optional) |
+| `oc_lint_ai.py` | Semantic lint (optional) |
 
-Maintainer rules live in `schema/AGENTS.md` and `schema/review-rules.md`.
+Maintainer rules: `schema/AGENTS.md`, `schema/review-rules.md`.
+
+## Documentation (local)
+
+Extended guides live under `docs/` (not required on GitHub):
+
+- [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) — plain-English system tour
+- [docs/OPERATOR.md](docs/OPERATOR.md) — operator runbook
+- [docs/USAGE.md](docs/USAGE.md) — new topic / template usage
+- [docs/UPGRADE.md](docs/UPGRADE.md) — engine upgrades via `git subtree`
 
 ## New topic from template
 

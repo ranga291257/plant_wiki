@@ -3,23 +3,22 @@
 
 What this does (in order):
   1. Validates --name and derives --slug if not given.
-  2. Removes sample raw/<SampleSection>/ folders (e.g. Digital_transformation),
-     unless --keep-raw is passed.
+  2. Removes bundled sample raw/ subfolders (if any), unless --keep-raw is passed.
   3. Wipes generated wiki content (mocs/, sources/, entities/, concepts/,
      analyses/, overview.md) so the new topic starts clean,
      unless --keep-wiki is passed.
   4. Rewrites the `<topic>` placeholder in templates/*.md to the topic slug.
   5. Updates the title block in README.md so the repo identifies itself
      with the new topic.
-  6. Ensures raw/ and wiki/ are tracked even when empty via .gitkeep files.
+  6. Ensures raw/ and wiki/ exist (with .gitkeep if missing).
 
 What this does NOT touch:
   - schema/  (single source of truth, copied as-is)
-  - app/, scripts/, .github/, mkdocs.yml, .wikiignore (engine code)
+  - app/, scripts/, .wikiignore (engine code)
   - raw/<your topic>/ once you start adding content
 
 Run from the repo root:
-  python3 scripts/init_topic.py --name "Industrial AI" --slug industrial-ai --yes
+  ./run scripts/init_topic.py --name "Thermal Plant" --slug thermal-plant --yes
 """
 from __future__ import annotations
 
@@ -35,7 +34,7 @@ WIKI_DIR = ROOT / "wiki"
 TEMPLATES_DIR = ROOT / "templates"
 README = ROOT / "README.md"
 
-SAMPLE_RAW_FOLDERS = {"Digital_transformation"}
+SAMPLE_RAW_FOLDERS: set[str] = set()
 WIKI_GENERATED_SUBFOLDERS = ("mocs", "sources", "entities", "concepts", "analyses")
 WIKI_GENERATED_FILES = ("overview.md",)
 
@@ -110,8 +109,8 @@ def update_readme_title(name: str) -> bool:
         return False
     text = README.read_text(encoding="utf-8")
     new_text = re.sub(
-        r"^# llmwiki.*$",
-        f"# llmwiki — {name}",
+        r"^# Plant Wiki.*$",
+        f"# Plant Wiki — {name}",
         text,
         count=1,
         flags=re.MULTILINE,

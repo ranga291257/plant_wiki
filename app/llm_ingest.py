@@ -98,7 +98,7 @@ For each entity, output a JSON object on its own line with keys: name, slug, ent
 Output only JSON lines, no other text. Maximum 2 entities.
 
 Example:
-{{"name": "FC-101 Control Loop", "slug": "fc-101-control-loop", "entity_type": "loop", "relevance": "Primary loop exhibiting oscillation."}}
+{{"name": "TIC-102", "slug": "tic-102", "entity_type": "controller", "relevance": "Temperature loop on the thermal plant main loop."}}
 """
 
 ENTITY_PAGE_PROMPT = """

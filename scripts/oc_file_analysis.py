@@ -21,7 +21,7 @@ def run_update_pipeline() -> None:
     commands = [
         [py, "scripts/build_index.py"],
         [py, "scripts/lint_wiki.py"],
-        [py, "scripts/log_event.py", "update", "OpenClaw analysis file", "trigger=openclaw"],
+        [py, "scripts/log_event.py", "update", "Wiki analysis file", "trigger=oc_file_analysis"],
     ]
     for cmd in commands:
         result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
@@ -32,7 +32,7 @@ def run_update_pipeline() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OpenClaw: file query answer into wiki/analyses")
+    parser = argparse.ArgumentParser(description="Save a query answer into wiki/analyses/")
     parser.add_argument("question", help="Original question")
     parser.add_argument("answer", help="Answer markdown/text")
     parser.add_argument("--slug", default="analysis", help="Analysis file slug")
